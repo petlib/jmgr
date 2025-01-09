@@ -1,0 +1,19 @@
+#
+# Created by jmgr(8) 
+#
+exec.start = "/bin/sh /etc/rc";
+exec.stop = "/bin/sh /etc/rc.shutdown";
+exec.clean;
+exec.system_user = "root";
+exec.jail_user = "root";
+allow.mount.devfs;
+allow.chflags;
+allow.raw_sockets;
+mount.devfs;    
+
+<JailName> {
+        path = "<JailPath>";
+        host.hostname = <JailName>; 
+        exec.consolelog = "/var/log/jail_<JailName>_console.log";
+        <IPConf>
+}

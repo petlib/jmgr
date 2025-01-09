@@ -1,0 +1,372 @@
+.\" 
+.\" Author peter@libassi.se
+.\"
+.Dd Sep 22, 2024
+.Dt jmgr 8
+.Os
+.
+.Sh NAME
+.Nm jmgr
+.Nd yet another jail management tool
+.Sh SYNOPSIS
+.Nm
+.Cm
+.Nm
+.Cm help
+.Nm
+.Cm version
+.Nm
+.Cm subcommand
+.Op Ar options
+.Op Ar arguments
+.Nm
+.Ar jail
+.
+.Sh DESCRIPTION
+The
+.Nm
+is yet another FreeBSD jail management tool wich uses userland commands for basic administration of jails.
+
+.Nm
+can create/clone jails as 'thick jails on ZFS' or just 'thick jails' on a ordinary filesystem and stores the jail configuration in /etc/jail.conf.d
+
+.Nm
+has limited support for existing jails in /etc/jail.conf
+
+.Nm
+is configurable, use command:
+.Nm
+.Cm config
+to see actual configuration. Settings can be adjusted in the
+.Nm 
+system wide config file jmgr.conf in the /usr/local/etc/jmgr directory.
+.
+.Sh SUBCOMMANDS
+.
+.Bl -tag -width ""
+.It Xo
+.Cm help
+.Xc
+Displays a help message.
+
+.It Xo
+.Cm version
+.Xc
+Displays the current software version.
+.Xc
+
+.It Xo
+.Cm config
+.Op Ar -json
+.Xc
+Displays
+.Nm
+current configuration, see /usr/local/etc/jmgr/jmgr.conf.
+.Xc
+
+.It Xo
+.Cm runs
+.Xc
+List running jails.
+.Xc
+
+.It Xo
+.Cm jails
+.Xc
+List all jails configured in /etc/jail.conf and /etc/jail.conf.d/*
+.Xc
+
+.It Xo
+.Cm 
+.Ar jail
+.Xc
+List details about specified
+.Ar jail
+.
+.Xc
+
+.It Xo
+.Cm create
+.Op Ar -f
+.Op Ar -v FreeBSD Release
+.Ar jail
+.Op Ar IP address
+.Op Ar Interface
+.Xc
+Create a new Jail named
+.Ar jail
+.Xc
+
+.It Xo
+.Cm create
+.Op Ar -l
+.Xc
+Provide a list of avaliable FreeBSD releases.
+.Xc
+
+.It Xo
+.Cm clone
+.Op Ar -f
+.Ar source-jail
+.Ar new-jail
+.Op Ar new IP address
+.Op Ar new Interface
+.Xc
+Clone a existing jail filesystem to a new jail filesystem and create a new jail configuration.
+.Xc
+
+.It Xo
+.Cm start 
+.Op Ar -all
+.Op Ar jail
+.Op Ar jail2
+.Op Ar ...
+.Xc
+Starts jail(s)
+.Xc
+
+.It Xo
+.Cm stop 
+.Op Ar -all
+.Op Ar jail
+.Op Ar jail2
+.Op Ar ...
+.Xc
+Stops jail(s)
+.Xc
+
+.It Xo
+.Cm restart 
+.Op Ar -all
+.Op Ar jail
+.Op Ar jail2
+.Op Ar ...
+.Xc
+restart jail(s)
+.Xc
+
+.It Xo
+.Cm enter 
+.Ar jail
+.Op Ar user
+.Xc
+Enter a running jail. If optional
+.Op user
+argument is omitted the default
+.Op user
+from jmgr config will be used.
+.Xc
+
+.It Xo
+.Cm enable 
+.Ar jail
+.Xc
+Enable
+.Ar jail
+to start at boot.
+.Xc
+
+.It Xo
+.Cm disable 
+.Ar jail
+.Xc
+Disable
+.Ar jail
+from start at boot.
+.Xc
+
+.It Xo
+.Cm snapshot
+.Ar jail
+.Xc
+Create a snapshot of 
+.Ar jail
+filesystem (zfs dataset).
+.Xc
+
+.It Xo
+.Cm rollback
+.Ar jail
+.Ar snapshot
+.Xc
+Rollback the
+.Ar jail
+filesystem to the state of the
+.Ar snapshot
+.Xc
+
+.It Xo
+.Cm destroy
+.Op Ar -f
+.Ar snapshot
+.Xc
+Removes the Jail snapshot
+.Ar snapshot
+where
+.Ar snapshot
+is the complete string as reported by
+.Nm
+.Ar jail
+details.  
+.Xc
+
+.It Xo
+.Cm update
+.Op Ar -f
+.Cm patch
+.Ar jail
+.Xc
+Update the
+.Ar jail
+O/S. O/S is updated to the latest patch.
+.Xc
+
+.It Xo
+.Cm update
+.Op Ar -f
+.Cm pkgs
+.Ar jail
+.Xc
+Upgrade the
+.Ar jail
+package's.
+.Xc
+
+.It Xo
+.Cm update
+.Cm rel
+.Ar jail
+.Ar FreeBSD release
+.Xc
+Upgrade the
+.Ar jail
+to given FreeBSD release. See update -l
+.Xc
+
+.It Xo
+.Cm update
+.Op Ar -l
+.Xc
+Provide a list of avaliable FreeBSD releases.
+.Xc
+
+.It Xo
+.Cm destroy
+.Op Ar -f
+.Op Ar -r
+.Ar jail
+.Op Ar jail2
+.Op Ar ...
+.Xc
+Removes the 
+.Ar jail(s)
+configuration and the
+.Ar jail(s)
+filesystem (zfs dataset).
+.Xc
+
+.Sh OPTIONS
+.
+.Bl -tag -width ""
+.It Xo
+.Cm -f
+.Xc
+Assume 'yes' on all questions.
+
+.It Xo
+.Cm -r
+.Xc
+Destroy jail[s] including their snapshots.
+
+.It Xo
+.Cm -json
+.Xc
+Print output in JSON format.
+
+.It Xo
+.Cm -all
+.Xc
+Start, stop or restart all jails.
+
+.It Xo
+.Cm -l
+.Xc
+Provides a list of avaliable FreeBSD releases.
+
+.It Xo
+.Cm -v FreeBSD Release
+.Xc
+Define the desired 'FreeBSD Release'.
+
+.Sh HISTORY
+FreeBSD Jails on ZFS is a powerful feature. Altough for the casual user(me) jail administration can be complicated. 
+This is an attempt to simplify some of the tasks involved in create,run,backup,update,upgrade,rollback and destroy ordinary jails.
+.Nm
+does not do anything particulary fancy, it just uses the functions avaliable with 
+.Xr jail 8,
+.Xr jail.conf 8
+and
+.Xr zfs 8
+. 
+
+.Sh AUTHOR
+.An -nosplit
+peter@libassi.se
+.Sh BUGS
+I'm sure there are. It's Murphy's Law.
+.Sh NOTES
+.
+(CrUD) subcommands require root capabilites. (cRud) subcommands works with a ordinary user.
+
+About
+.Nm
+.Cm create 
+.Ar jail
+
+First review the current jmgr configuration to ensure that the new jail is created in desired location and with desired jail attributes i.e the contents of the file pointed out by config entry 'JailConfTemplate'.
+
+Adjust /usr/local/etc/jmgr/jmgr.conf (or the file pointed out by env variable JMGR_CONF) and the 'JailConfTemplate' file as desired. The 'JailConfTemplate' file has <KeyWord> markers. These will be replaced at jail creation by .Nm as a result of the user dialog.
+
+Created/Cloned Jail configuration is stored in /etc/jail.conf.d/'Jail name'.conf.
+
+There is also a hook for post install work. See 'PostInstall' in /usr/local/etc/jmgr/jmgr.conf and the script /usr/local/etc/jmgr/postinstall.sh.
+
+Use:
+.Nm
+.Cm config
+to verify that everything looks ok and that the field 'badConfig' is 'false'.
+
+jmgr will try to resolve the
+.Ar jail
+to an IP address. 
+
+If the optional
+.Op Interface
+is omitted the default as defined in the jmgr config will be used. See 'jmgr config'.
+
+If both the optional
+.Op IP Address
+and
+.Op Interface
+are omitted and the 
+.Ar jail
+does not resolve to an IP address, 
+.Nm
+will ask if the new jail should inherit the host IP address.
+
+.Sh SEE ALSO
+.Xr jail 8 ,
+.Xr jail.conf 8 ,
+.Xr jls 8 ,
+.Xr jexec 8 ,
+.Xr sysrc 8 ,
+.Xr zfs 8 ,
+.Xr zfs-create 8 ,
+.Xr zfs-snapshot 8 ,
+.Xr zfs-send 8 ,
+.Xr zfs-receive 8 ,
+.Xr zfs-rollback 8
+.Xr zfs-destroy 8 ,
+.Xr freebsd-update 8 ,
+.Xr pkg 8
+
