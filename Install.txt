@@ -10,7 +10,7 @@ Install requirements:
 
 Get source:
     $ cd $HOME
-    $ git clone gitserver:my_src/jmgr
+    $ git clone https://github.com/petlib/jmgr.git
 
 Build and install:
     $ cd jmgr
