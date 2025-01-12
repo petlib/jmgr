@@ -1,0 +1,17 @@
+# github.com/janeczku/go-spinner v0.0.0-20150530144529-cf8ef1d64394
+## explicit
+github.com/janeczku/go-spinner
+# golang.org/x/crypto v0.29.0
+## explicit; go 1.20
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/sys v0.27.0
+## explicit; go 1.18
+golang.org/x/sys/plan9
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/term v0.26.0
+## explicit; go 1.18
+golang.org/x/term
+# gopkg.in/yaml.v2 v2.4.0
+## explicit; go 1.15
+gopkg.in/yaml.v2
