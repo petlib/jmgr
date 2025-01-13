@@ -6,7 +6,7 @@ testclean:
 
 # run all tests, 
 .PHONY: test
-testall: test1 test2 test3 test4 test5 test6 test7 test8 test9 testLast
+test: test1 test2 test3 test4 test5 test6 test7 test8 test9 testLast
 
 # test show config
 .PHONY: test1
