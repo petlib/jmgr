@@ -1960,7 +1960,7 @@ func help() {
  Create/Backup:
   create [-f] [-v 'FreeBSD Release'] 'jail name' [ 'IP address' [ 'interface name' ] ]
   create [-l] 
-  Snapshot 'jail name'
+  snapshot 'jail name'
 
  Clone:
   clone [-f] 'from jail name' 'new jail name' [ 'new jail IP address' [ 'new jail interface' ] ]
