@@ -33,7 +33,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const version = "0.01" // 2025-01-08
+const version = "0.001" // 2025-01-13
 
 // struct for a new jail
 type NewJail struct {
@@ -1701,9 +1701,8 @@ func latestSnapshot(dataset string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("latestSnapshot() failed: %w", err)
 	}
-
+	
 	snaps := strings.Split(string(b[:]), "\n")
-
 	if len(snaps) < 2 {
 		return "", fmt.Errorf("latestSnapshot() no snapshots found for: %s", dataset)
 	}

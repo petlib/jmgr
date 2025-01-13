@@ -17,7 +17,7 @@ build: $(TARGETS)
 
 # build the CLI
 ${TARGET}: ${STARGET}
-	go123 build -ldflags "-s" -o=${TARGET} ${MAIN_PACKAGE_PATH}
+	go build -ldflags "-s" -o=${TARGET} ${MAIN_PACKAGE_PATH}
 
 # gzip man page
 ${SMANZ}: ${SMAN}

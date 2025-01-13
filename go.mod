@@ -1,6 +1,6 @@
 module jmgr
 
-go 1.23.2
+go 1.21.13
 
 require (
 	github.com/janeczku/go-spinner v0.0.0-20150530144529-cf8ef1d64394
