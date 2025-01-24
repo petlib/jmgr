@@ -5,7 +5,7 @@ Release 0.001 2025-01-15
     - First release published on github
     - FreeBSD port submit: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=284061
 
-Release 0.002 <Date here !!!>
+Release 0.002 2025-01-24
     - Bug fix: 'jmgr stop' left filesystems mounted. 
     - ER: man page clarifications.
     - ER: 'jmgr config' inform if the defined ZFS dataset does not exist.
