@@ -6,7 +6,7 @@
 
 Install requirements:
 
-    # pkg install git go123 curl
+    # pkg install git go
 
 Get source:
     $ cd $HOME
