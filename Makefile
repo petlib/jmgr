@@ -11,7 +11,6 @@ SMAN = ${SMANDIR}/jmgr.8
 SMANZ = ${SMANDIR}/jmgr.8.gz
 TARGETS = ${TARGET} ${SMANZ}
 
-# for 'make'
 .PHONY: build 
 build: $(TARGETS)
 

@@ -29,11 +29,13 @@ import (
 	"time"
 
 	"github.com/janeczku/go-spinner"
+	"github.com/jlaffaye/ftp"
 	"golang.org/x/term"
 	"gopkg.in/yaml.v2"
+	"net/url"
 )
 
-const version = "0.001" // 2025-01-13
+const version = "0.002" // 2025-01-24
 
 // struct for a new jail
 type NewJail struct {
@@ -764,9 +766,13 @@ func (Snapshot) Run(args []string) {
 		log.Fatalln("Jail " + jail.Name + " is a child of " + jail.Parent + ", Can't continue.")
 	}
 
-	_, err = snapshot(jail.Dataset)
-	if err != nil {
-		log.Fatalln(err.Error())
+	if len(jail.Dataset) > 0 {
+		_, err = snapshot(jail.Dataset)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+	} else {
+		log.Fatalln("Jail", jail.Name, "does not support zfs snapshot.")
 	}
 }
 
@@ -816,6 +822,7 @@ func (Update) Run(args []string) {
 	fset := flag.NewFlagSet("update", flag.ExitOnError)
 	force := fset.Bool("f", false, "Update jail without prompting for confirmation.")
 	list := fset.Bool("l", false, "List available releases")
+	version := fset.String("v", "", "Freebsd Release, ex: 13.4-RELEASE, if not defined jail is created with host release.")
 	fset.Parse(args[1:])
 	args = fset.Args()
 
@@ -861,25 +868,35 @@ func (Update) Run(args []string) {
 
 	case "rel":
 
-		if len(args) >= 3 {
-
-			release := args[2]
-			askExitOnNo("Upgrade " + jail.Name + " FreeBSD from: " + jail.OsVersion + " to: " + release + " (yes/No)?")
-
-			if len(jail.Dataset) > 0 {
-				if askYes("Create snapshot before continue (yes/No)?") {
-					snapshot(jail.Dataset)
-				}
-			}
-
-			err := upgradeRel(jail, release)
-			if err != nil {
-				log.Fatalln("Upgrade Release failed: ", err.Error())
-			}
-
+		var osVersion string
+		if len(*version) > 1 {
+			osVersion = *version
 		} else {
-			help()
+			osVersion, err = hostVersion()
+			if err != nil {
+				log.Fatalln("Create(): " + err.Error())
+			}
 		}
+
+		rgx := regexp.MustCompile(osVersion)
+		match := rgx.FindStringSubmatch(jail.OsVersion)
+		if len(match) > 0 {
+			log.Fatalln(jail.Name, "already at release", osVersion)
+		}
+
+		askExitOnNo("Upgrade " + jail.Name + " FreeBSD from: " + jail.OsVersion + " to: " + osVersion + " (yes/No)?")
+
+		if len(jail.Dataset) > 0 {
+			if askYes("Create snapshot before continue (yes/No)?") {
+				snapshot(jail.Dataset)
+			}
+		}
+
+		err := upgradeRel(jail, osVersion)
+		if err != nil {
+			log.Fatalln("Upgrade Release failed: ", err.Error())
+		}
+		fmt.Println("FreeBSD upgrade completed.")
 
 	case "pkgs":
 
@@ -1358,7 +1375,7 @@ func jmgrInit() Jmgr {
 		cmd := exec.Command("/sbin/zfs", "list", "-H", cfg.ZFSdataSet)
 		b, err := cmd.Output()
 		if err != nil {
-			cfg.JailsHome = "Can't find Jails Home directory."
+			cfg.ZFSdataSet = "Dataset " + cfg.ZFSdataSet + " does not exist."
 			cfg.badConfig = true
 		} else {
 			words := strings.Fields(string(b[:]))
@@ -1578,7 +1595,7 @@ func startstop(action string, jail *Jail) error {
 		if !jail.runs() {
 			return nil
 		} else {
-			args = []string{"-r", jail.Name}
+			args = []string{"-r", "-f", jail.ConfigPath, jail.Name}
 		}
 
 	case "restart":
@@ -1701,7 +1718,7 @@ func latestSnapshot(dataset string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("latestSnapshot() failed: %w", err)
 	}
-	
+
 	snaps := strings.Split(string(b[:]), "\n")
 	if len(snaps) < 2 {
 		return "", fmt.Errorf("latestSnapshot() no snapshots found for: %s", dataset)
@@ -1822,28 +1839,42 @@ func upgradeRel(jail *Jail, Release string) error {
 func printRel() error {
 
 	var cfg Jmgr = jmgrInit()
-
 	hw, err := machine()
 	if err != nil {
 		return fmt.Errorf("printRel() failed: %w", err)
 	}
 
 	fetchURL := cfg.OsUrlPrefix + "/" + hw + "/" + hw + "/"
-	b, err := runCmd("/usr/local/bin/curl", []string{"-s", fetchURL})
+	u, err := url.Parse(fetchURL)
+	if err != nil {
+		return fmt.Errorf("printRel() failed: %w", err)
+	}
+
+	c, err := ftp.Dial(u.Hostname()+":21", ftp.DialWithTimeout(5*time.Second))
+	if err != nil {
+		return fmt.Errorf("printRel() failed: %w", err)
+	}
+	defer c.Quit()
+
+	err = c.Login("anonymous", "anonymous")
+	if err != nil {
+		return fmt.Errorf("printRel() failed: %w", err)
+	}
+
+	list, err := c.List(u.EscapedPath())
 	if err != nil {
 		return fmt.Errorf("printRel() failed: %w", err)
 	}
 
 	rgx := regexp.MustCompile(`(.*RELEASE)`)
 	fmt.Println("Available Releases at:", fetchURL)
-	for _, rel := range strings.Split(string(b[:]), "\n") {
-
-		match := rgx.FindStringSubmatch(rel)
+	for _, entry := range list {
+		match := rgx.FindStringSubmatch(entry.Name)
 		if len(match) > 1 {
-			col := strings.Fields(rel)
-			fmt.Println(col[len(col)-1])
+			fmt.Println(entry.Name)
 		}
 	}
+
 	return nil
 }
 
@@ -1958,7 +1989,7 @@ func help() {
 										
  Create/Backup:
   create [-f] [-v 'FreeBSD Release'] 'jail name' [ 'IP address' [ 'interface name' ] ]
-  create [-l] 
+  create -l 
   snapshot 'jail name'
 
  Clone:
@@ -1979,7 +2010,7 @@ func help() {
  Update os, Upgrade pkgs, Upgrade os release:
   update [-f] patch 'jail name'
   update [-f] pkgs 'jail name'
-  update rel 'jail name' 'FreeBSD Release'
+  update [-v 'FreeBSD Release'] rel 'jail name'
   update -l
 
  Rollback:
@@ -1991,7 +2022,7 @@ Options:
   -r 		Destroy jail[s] including their snapshots
   -all		Start or Stop all jails.
   -l 		Provides a list of avaliable 'FreeBSD Releases'
-  -v		Define desired 'FreeBSD Release'
+  -v		Define desired version of 'FreeBSD Release'
 
  See jmgr(8) for details.
 

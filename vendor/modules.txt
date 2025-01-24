@@ -1,6 +1,15 @@
+# github.com/hashicorp/errwrap v1.0.0
+## explicit
+github.com/hashicorp/errwrap
+# github.com/hashicorp/go-multierror v1.1.1
+## explicit; go 1.13
+github.com/hashicorp/go-multierror
 # github.com/janeczku/go-spinner v0.0.0-20150530144529-cf8ef1d64394
 ## explicit
 github.com/janeczku/go-spinner
+# github.com/jlaffaye/ftp v0.2.0
+## explicit; go 1.17
+github.com/jlaffaye/ftp
 # golang.org/x/crypto v0.29.0
 ## explicit; go 1.20
 golang.org/x/crypto/ssh/terminal

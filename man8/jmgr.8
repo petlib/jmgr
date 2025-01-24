@@ -235,12 +235,12 @@ package's.
 .It Xo
 .Cm update
 .Cm rel
+.Op Ar -v FreeBSD Release
 .Ar jail
-.Ar FreeBSD release
 .Xc
 Upgrade the
 .Ar jail
-to given FreeBSD release. See update -l
+to 'host' version or given FreeBSD release. See update -l
 .Xc
 
 .It Xo
@@ -311,7 +311,8 @@ and
 
 .Sh AUTHOR
 .An -nosplit
-peter@libassi.se
+peter@libassi.se. Source and more details at https://github.com/petlib/jmgr.git
+
 .Sh BUGS
 I'm sure there are. It's Murphy's Law.
 .Sh NOTES
@@ -320,21 +321,33 @@ I'm sure there are. It's Murphy's Law.
 
 About
 .Nm
-.Cm create 
+.Cm create
 .Ar jail
+:
 
-First review the current jmgr configuration to ensure that the new jail is created in desired location and with desired jail attributes i.e the contents of the file pointed out by config entry 'JailConfTemplate'.
+Review the current
+.Nm
+configuration to ensure that the new jail is created in the desired location and with the desired attributes.
+Adjust the system wide /usr/local/etc/jmgr/jmgr.conf or (if used) the local
+.Nm
+configuration file pointed out by env variable JMGR_CONF.
 
-Adjust /usr/local/etc/jmgr/jmgr.conf (or the file pointed out by env variable JMGR_CONF) and the 'JailConfTemplate' file as desired. The 'JailConfTemplate' file has <KeyWord> markers. These will be replaced at jail creation by .Nm as a result of the user dialog.
+Check/adjust 'ZFSdataSet', if needed create the ZFS dataset home for jails, Example: zfs create -o mountpoint=/usr/local/jails zroot/jails
 
-Created/Cloned Jail configuration is stored in /etc/jail.conf.d/'Jail name'.conf.
+Check desired jail configuration i.e the contents of the file pointed out by config entry 'JailConfTemplate'. The 'JailConfTemplate'
+file has <KeyWord> markers. These will be replaced at jail creation by
+.Nm
+as a result of the user dialog.
+The Created/Cloned Jail configuration is stored in /etc/jail.conf.d/'Jail name'.conf.
 
-There is also a hook for post install work. See 'PostInstall' in /usr/local/etc/jmgr/jmgr.conf and the script /usr/local/etc/jmgr/postinstall.sh.
+There is also a hook for post install work. See 'PostInstall' in the
+.Nm
+configuration file and the example script /usr/local/etc/jmgr/postinstall.sh.
 
 Use:
 .Nm
 .Cm config
-to verify that everything looks ok and that the field 'badConfig' is 'false'.
+to verify that everything looks ok, 'badConfig' should be false.
 
 jmgr will try to resolve the
 .Ar jail

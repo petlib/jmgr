@@ -1,0 +1,15 @@
+
+jmgr Release Notes
+
+Release 0.001 2025-01-15
+    - First release published on github
+    - FreeBSD port submit: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=284061
+
+Release 0.002 <Date here !!!>
+    - Bug fix: 'jmgr stop' left filesystems mounted. 
+    - ER: man page clarifications.
+    - ER: 'jmgr config' inform if the defined ZFS dataset does not exist.
+    - ER: removed curl dependency
+    - ER: 'jmgr update rel' now with optional Release version
+    - ER: prevent 'jmgr snapshot' on non zfs jail
+ 
