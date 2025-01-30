@@ -35,7 +35,7 @@ import (
 	"net/url"
 )
 
-const version = "0.002" // 2025-01-24
+const version = "0.003" // 2025-01-30
 
 // struct for a new jail
 type NewJail struct {
@@ -210,7 +210,7 @@ func (ShowStruct) Run(args []string) {
 type EnableDisable struct{}
 
 func (EnableDisable) Run(args []string) {
-	// enable|disable jail_name
+
 	var sysrc string = "/usr/sbin/sysrc"
 	_, jail, err := verifyArgs(2, 1, true, true, args)
 	if err != nil {
@@ -1056,8 +1056,7 @@ func (cfg *Jmgr) jmgrConfigfileReader() {
 	}
 }
 
-// fmt.Printf("%+v\n", cfg.Jails)
-// addJails method goes out and harvest info about existing jails and add these to the provided Jmgr struct
+// addJails method goes out and harvest info about existing jails and add these to the Jmgr struct
 func (cfg *Jmgr) addJails() {
 
 	// expressions to capture the jail conf syntax
@@ -1071,14 +1070,12 @@ func (cfg *Jmgr) addJails() {
 
 	b, err := runCmd("/usr/sbin/jls", []string{"-v", "--libxo", "json"})
 	if err != nil {
-		//log.Fatalln("addJails():" + err.Error())
 		fmt.Println("addJails() -> jls: " + err.Error())
 	}
 
 	var f Jls
 	err = json.Unmarshal(b, &f)
 	if err != nil {
-		//log.Fatalln("Oops, problem with JSON " + err.Error())
 		fmt.Println("addJails() -> json: " + err.Error())
 	}
 
@@ -1418,12 +1415,7 @@ func showJail(cfg *Jmgr, args []string) {
 		fmt.Fprintf(w, rowsFmt, "Jid", jidText)
 		fmt.Fprintf(w, rowsFmt, "Name", jail.Name)
 		fmt.Fprintf(w, rowsFmt, "Hostname", jail.Hostname)
-		/*
-			if jail.Jid > 0 {
-				fmt.Fprintf(w, rowsFmt, "State", jail.State)
-				fmt.Fprintf(w, rowsFmt, "Cpusetid", strconv.Itoa(jail.Cpusetid))
-			}
-		*/
+		
 		if len(jail.Ipv4_addrs) > 0 {
 			for _, ipv4 := range jail.Ipv4_addrs {
 				if len(ipv4) > 0 {
@@ -1486,19 +1478,6 @@ func notRoot() bool {
 // execute command and return it's stdout & stderr
 func runCmd(command string, args []string) ([]byte, error) {
 
-	/* New way
-	   var stderr bytes.Buffer
-	   var out bytes.Buffer
-	   cmd := exec.Command("command", "arg1", "arg2")
-	   cmd.Stderr = &stderr
-	   cmd.Stdout = &out
-
-	   err := cmd.Run()
-	   if err != nil {
-	       // The command failed. Use stderr.String() to get the detailed error message.
-	       fmt.Printf("Error: %s\n", stderr.String())
-	   }
-	*/
 	var stderr bytes.Buffer
 	var stdout bytes.Buffer
 	cmd := exec.Command(command, args...)
@@ -1506,25 +1485,9 @@ func runCmd(command string, args []string) ([]byte, error) {
 	cmd.Stdout = &stdout
 	err := cmd.Run()
 	if err != nil {
-		//fmt.Printf("Stdout: %s\n", stdout.String())
-		//fmt.Printf("Stderr: %s\n", stderr.String())
 		return nil, fmt.Errorf("%s %s failed with:%s", command, args, stderr.String())
 	}
 	return stdout.Bytes(), nil
-
-	/* Old way
-	cmd := exec.Command(command, args...)
-	cmd.Stderr = cmd.Stdout
-	out, err := cmd.Output()
-	if err != nil {
-		fmt.Printf("Debug out:%s\n",string(out))
-		fmt.Printf("Debug err: %s\n", err.Error())
-		//return nil, fmt.Errorf("%s %s failed with: %w: %s", command, args, err,string(out))
-		return nil, err
-	}
-	return out, nil
-	*/
-
 }
 
 // runCmdStdin Interact with running command.
@@ -1543,7 +1506,7 @@ func hostVersion() (string, error) {
 	rgx := regexp.MustCompile(`(.*RELEASE)`)
 	b, err := runCmd("/bin/freebsd-version", []string{})
 	if err != nil {
-		//return "", fmt.Errorf("hostVersion() failed with: %w", err)
+		return "", fmt.Errorf("hostVersion() failed with: %w", err)
 	}
 	match := rgx.FindStringSubmatch(string(b[:]))
 
@@ -1611,7 +1574,6 @@ func startstop(action string, jail *Jail) error {
 
 	_, err := runCmd(command, args)
 	if err != nil {
-		//return fmt.Errorf("%s %s %w", command,args,err)
 		return err
 	}
 	return nil
@@ -1746,7 +1708,6 @@ func reportJails(runs bool, cfg *Jmgr) {
 	case width > narrow:
 		labelFmt += "\t%s\t%s\n"
 		rowsFmt += "\t%s\t%s\n"
-		//fmt.Fprintf(w, labelfFmt, "Jid", "Hostname", "IP Address", "Path", "ZFS Dataset", "Config", "OS Version", "Boot")
 		fmt.Fprintf(w, labelFmt, "Jid", "Name", "IP Address", "Path", "Config", "OS Version", "Boot")
 
 	default:
@@ -1762,7 +1723,6 @@ func reportJails(runs bool, cfg *Jmgr) {
 		} else {
 			switch {
 			case width > narrow:
-				//fmt.Fprintf(w, rowsFmt, jail.Jid, jail.Hostname, jail.Ipv4, jail.Path, jail.Dataset, jail.ConfigPath, jail.OsVersion, jail.OnBoot)
 				fmt.Fprintf(w, rowsFmt, jail.Jid, jail.Name, jail.Ipv4, jail.Path, jail.ConfigPath, jail.OsVersion, jail.OnBoot)
 			default:
 				fmt.Fprintf(w, rowsFmt, jail.Jid, jail.Name, jail.Ipv4, jail.Path, jail.OsVersion, jail.OnBoot)
